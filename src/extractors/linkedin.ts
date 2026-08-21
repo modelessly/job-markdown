@@ -23,19 +23,20 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
 
   const textFrom = (selectors: string[]): string => {
     for (const selector of selectors) {
-      const element = document.querySelector(selector);
-      const value = normalize(element?.textContent);
-      if (value) return value;
+      for (const element of document.querySelectorAll(selector)) {
+        const value = normalize(element.textContent);
+        if (value) return value;
+      }
     }
     return "";
   };
 
   const attributeFrom = (selectors: string[], attribute: string): string => {
     for (const selector of selectors) {
-      const value = normalize(
-        document.querySelector(selector)?.getAttribute(attribute),
-      );
-      if (value) return value;
+      for (const element of document.querySelectorAll(selector)) {
+        const value = normalize(element.getAttribute(attribute));
+        if (value) return value;
+      }
     }
     return "";
   };
@@ -74,14 +75,59 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
     .map(stringValue)
     .filter(Boolean);
 
+  const linkedInMetaTitle = attributeFrom(
+    ["meta[property='og:title']"],
+    "content",
+  );
+  const publicMetaMatch = linkedInMetaTitle.match(
+    /^(.+?) hiring (.+?) in .+?\s*\|\s*LinkedIn$/i,
+  );
+  const currentJobId = window.location.pathname.match(
+    /\/jobs\/view\/([^/?#]+)/,
+  )?.[1];
+  const titleFromCurrentJobLink = Array.from(
+    document.querySelectorAll("a[href*='/jobs/view/']"),
+  )
+    .filter((element) => {
+      if (!currentJobId) return true;
+      try {
+        const path = new URL(
+          element.getAttribute("href") ?? "",
+          window.location.href,
+        ).pathname;
+        return path.includes(`/jobs/view/${currentJobId}`);
+      } catch {
+        return false;
+      }
+    })
+    .map((element) => normalize(element.textContent))
+    .find(Boolean);
+  const documentTitle = normalize(document.title)
+    .replace(/\s*\|\s*LinkedIn\s*$/i, "")
+    .trim();
+  const companyFromLogo = attributeFrom(
+    ["main img[alt*='logo' i]", "img[alt*='logo' i]"],
+    "alt",
+  )
+    .replace(/\s+(?:company\s+)?logo\s*$/i, "")
+    .trim();
+
   const title =
     stringValue(jsonLd?.title) ||
     textFrom([
       "h1.top-card-layout__title",
       "h1.t-24",
       ".job-details-jobs-unified-top-card__job-title h1",
+      "[data-testid*='job-title' i]",
       "h1",
-    ]);
+    ]) ||
+    attributeFrom(["[aria-label^='Job title,']"], "aria-label").replace(
+      /^Job title,\s*/i,
+      "",
+    ) ||
+    titleFromCurrentJobLink ||
+    publicMetaMatch?.[2] ||
+    (documentTitle && !/^LinkedIn$/i.test(documentTitle) ? documentTitle : "");
   const company =
     stringValue(hiring?.name) ||
     textFrom([
@@ -93,7 +139,11 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
     attributeFrom(["[aria-label^='Company,']"], "aria-label").replace(
       /^Company,\s*/i,
       "",
-    );
+    ) ||
+    publicMetaMatch?.[1] ||
+    (companyFromLogo && !/^LinkedIn$/i.test(companyFromLogo)
+      ? companyFromLogo
+      : "");
   const location =
     addressParts.join(", ") ||
     textFrom([
@@ -271,11 +321,15 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
   const descriptionElement = findDescriptionElement();
 
   if (!title || !company || !descriptionElement) {
+    const missing = [
+      !title ? "job title" : "",
+      !company ? "company" : "",
+      !descriptionElement ? "job description" : "",
+    ].filter(Boolean);
     return {
       ok: false,
       reason: "extraction_failed",
-      message:
-        "The job details could not be read. Try opening the full job page and try again.",
+      message: `Could not read the ${missing.join(", ")}. LinkedIn may be using a layout this version does not recognize.`,
     };
   }
 

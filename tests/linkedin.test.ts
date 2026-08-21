@@ -108,6 +108,9 @@ describe("LinkedIn extraction", () => {
     document.documentElement.innerHTML = fixture("linkedin-job-invalid.html");
     const result = await extractLinkedInJob();
     expect(result).toMatchObject({ ok: false, reason: "extraction_failed" });
+    if (result.ok) return;
+    expect(result.message).toContain("company, job description");
+    expect(result.message).not.toContain("The job details could not be read");
   });
 
   it("returns unsupported for a non-job LinkedIn page", async () => {
