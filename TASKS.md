@@ -1,45 +1,23 @@
 # TASKS.md
 
-Implementation backlog.
+## MVP Complete
 
-Keep this file focused on actionable work. Move completed or superseded context into `DECISIONS.md` or `PLANNER.md` when it becomes useful history.
+- [x] Define the Job Markdown product promise and V1 boundary.
+- [x] Create the Manifest V3 TypeScript/Vite extension scaffold.
+- [x] Build the popup and all required feedback states.
+- [x] Implement LinkedIn extraction with structured-data and selector fallbacks.
+- [x] Add local Markdown generation, YAML front matter, and safe downloads.
+- [x] Add sanitized extraction fixtures and focused automated tests.
+- [x] Document setup, architecture, privacy, limitations, and extension loading.
+- [x] Validate formatting, linting, type checking, tests, production build, assets, and permissions.
 
-## Phase 0: Product Setup
+## Manual Validation
 
-- [ ] Replace placeholders in `PRODUCT.md`
-- [ ] Define V1 scope in `docs/v1-scope.md`
-- [ ] Choose initial platform and stack in `ARCHITECTURE.md`
-- [ ] Capture initial product risks
-- [ ] Create or connect the project repository
-
-## Phase 1: Foundation
-
-- [ ] Create app or package scaffold
-- [ ] Establish minimal folder structure
-- [ ] Add basic build/run instructions
-- [ ] Add formatting and linting, if appropriate
-- [ ] Add first smoke test or verification path
-- [ ] Implement app shell or entry point
-
-## Phase 2: Core Workflow
-
-- [ ] Implement the smallest end-to-end user workflow
-- [ ] Persist the minimum useful user data
-- [ ] Add empty, loading, and error states
-- [ ] Verify the workflow manually
-- [ ] Add focused tests around durable logic
-
-## Phase 3: V1 Completion
-
-- [ ] Complete remaining included V1 capabilities
-- [ ] Add onboarding or first-run UX only if needed
-- [ ] Handle permissions and failure states
-- [ ] Improve accessibility basics
-- [ ] Validate performance for expected V1 usage
-- [ ] Prepare release checklist
+- [ ] Load `dist/` as an unpacked extension in Chrome.
+- [ ] Test against an authenticated LinkedIn job page with a fully expanded description.
+- [ ] Record any live markup or locale variants that require extractor updates.
 
 ## Backlog
 
-- [ ] `[future task]`
-- [ ] `[future task]`
-- [ ] `[future task]`
+- [ ] Consider another job-site extractor only after the LinkedIn workflow is validated.
+- [ ] Add extension-store packaging and release assets only when publishing is explicitly requested.

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Markdown</title>
+    <link rel="stylesheet" href="/src/popup.css" />
+  </head>
+  <body>
+    <main class="card">
+      <header class="brand">
+        <div class="mark" aria-hidden="true">M↓</div>
+        <div>
+          <h1>Job Markdown</h1>
+          <p>LinkedIn jobs, cleanly saved.</p>
+        </div>
+      </header>
+
+      <section id="status" class="status" role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="status-message">Checking this page…</span>
+      </section>
+
+      <button id="save-button" class="primary" type="button" disabled>
+        <span class="button-label">Save as Markdown</span>
+        <span class="button-icon" aria-hidden="true">↓</span>
+      </button>
+
+      <p class="privacy">Processed locally. Nothing is uploaded.</p>
+    </main>
+    <script type="module" src="/src/popup.ts"></script>
+  </body>
+</html>

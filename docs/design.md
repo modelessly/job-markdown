@@ -1,83 +1,34 @@
 # Design Principles
 
-Use this file to define the product's interaction and visual direction. Replace placeholders with product-specific guidance before heavy UI work begins.
-
 ## Emotional Tone
 
-The product should feel:
-
-- `[tone]`
-- `[tone]`
-- `[tone]`
-
-The product should avoid feeling:
-
-- `[anti-tone]`
-- `[anti-tone]`
-- `[anti-tone]`
+The product should feel calm, focused, and trustworthy. It should avoid feeling noisy, technical, or intrusive.
 
 ## Interaction Philosophy
 
-Define the preferred interaction posture:
+- One obvious primary action over configuration.
+- Immediate status feedback over hidden automation.
+- Local, user-initiated behavior over persistent access.
 
-- `[Example: fast actions over configuration]`
-- `[Example: low friction over completeness]`
-- `[Example: direct manipulation over hidden automation]`
-
-The user should never feel:
-
-- `[frustration to avoid]`
-- `[frustration to avoid]`
-- `[frustration to avoid]`
+The user should never wonder whether a capture is running, whether it succeeded, or whether their job data was uploaded.
 
 ## Visual Direction
 
-Inspired by:
-
-- `[reference]`
-- `[reference]`
-- `[reference]`
-
-But visually:
-
-- `[visual quality]`
-- `[visual quality]`
-- `[visual quality]`
-
-Avoid:
-
-- `[visual anti-pattern]`
-- `[visual anti-pattern]`
-- `[visual anti-pattern]`
+Use a compact editorial utility aesthetic: warm neutral surfaces, deep green action color, restrained typography, clear hierarchy, and minimal chrome. Avoid dashboard patterns, dense settings, promotional content, and unnecessary navigation.
 
 ## Motion
 
-Motion should feel:
-
-- `[quality]`
-- `[quality]`
-
-Avoid:
-
-- `[motion anti-pattern]`
-- `[motion anti-pattern]`
+Motion should be subtle and informative. Respect reduced-motion preferences and avoid decorative or blocking animation.
 
 ## Layout
 
-Prioritize:
-
-- clear hierarchy
-- generous touch or click targets
-- readable content
-- obvious primary action
-- minimal chrome around the core workflow
+Prioritize a clearly labelled primary action, readable status text, generous click targets, and a visible local-processing assurance.
 
 ## Accessibility
 
-At minimum, support:
-
-- readable type sizes
-- sufficient contrast
-- keyboard navigation where relevant
-- screen reader labels for important controls
-- clear focus, loading, empty, and error states
+- Semantic heading and button elements
+- Live-region status updates
+- Keyboard-visible focus treatment
+- Sufficient contrast and readable type
+- Disabled and busy states conveyed programmatically
+- Reduced-motion support

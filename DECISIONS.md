@@ -55,3 +55,35 @@ Some products will need to add infrastructure earlier, but that decision should 
 
 Status:
 Accepted
+
+---
+
+## 2026-08-21: Build Job Markdown As A Local Manifest V3 Extension
+
+Decision:
+Use a strict TypeScript and Vite Chrome extension with a popup, a self-contained LinkedIn extractor, site-independent Markdown utilities, and fixture-based Vitest tests. Request only `activeTab` and `scripting`.
+
+Reasoning:
+This is the smallest maintainable architecture that supports explicit one-click capture, local-only processing, resilient extraction, and future extractor additions without requiring persistent host access or a backend.
+
+Tradeoffs:
+The popup's Blob download avoids a broader downloads permission, while LinkedIn markup changes may still require selector maintenance and authenticated manual testing.
+
+Status:
+Accepted
+
+---
+
+## 2026-08-21: License Job Markdown Under MIT
+
+Decision:
+Release Job Markdown under the MIT License.
+
+Reasoning:
+MIT keeps the small browser utility straightforward to inspect, reuse, modify, and distribute while preserving the copyright and license notice.
+
+Tradeoffs:
+Downstream projects may distribute proprietary modifications, and the license provides the software without warranty.
+
+Status:
+Accepted
