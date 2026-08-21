@@ -30,6 +30,16 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
     return "";
   };
 
+  const attributeFrom = (selectors: string[], attribute: string): string => {
+    for (const selector of selectors) {
+      const value = normalize(
+        document.querySelector(selector)?.getAttribute(attribute),
+      );
+      if (value) return value;
+    }
+    return "";
+  };
+
   const jsonLd = Array.from(
     document.querySelectorAll('script[type="application/ld+json"]'),
   )
@@ -78,14 +88,24 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
       ".topcard__org-name-link",
       ".job-details-jobs-unified-top-card__company-name",
       "[data-tracking-control-name='public_jobs_topcard-org-name']",
-    ]);
+      "main a[href*='/company/']",
+    ]) ||
+    attributeFrom(["[aria-label^='Company,']"], "aria-label").replace(
+      /^Company,\s*/i,
+      "",
+    );
   const location =
     addressParts.join(", ") ||
     textFrom([
       ".topcard__flavor--bullet",
       ".job-details-jobs-unified-top-card__primary-description-container .tvm__text--low-emphasis",
       ".job-details-jobs-unified-top-card__bullet",
-    ]);
+      "[data-testid*='job-location' i]",
+    ]) ||
+    attributeFrom(["[aria-label^='Location,']"], "aria-label").replace(
+      /^Location,\s*/i,
+      "",
+    );
 
   const metadataText = Array.from(
     document.querySelectorAll(
@@ -133,9 +153,44 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
     metadataText.find((value) => /[$€£¥]\s?\d/.test(value)) ||
     null;
 
-  const descriptionSelector =
-    ".show-more-less-html__markup, #job-details, .jobs-description__content, .jobs-box__html-content";
-  const initialDescriptionElement = document.querySelector(descriptionSelector);
+  const descriptionSelectors = [
+    ".show-more-less-html__markup",
+    "#job-details",
+    ".jobs-description__content",
+    ".jobs-box__html-content",
+    "[data-testid*='job-description' i]",
+  ];
+  const findDescriptionElement = (): Element | null => {
+    for (const selector of descriptionSelectors) {
+      const element = document.querySelector(selector);
+      if (element && normalize(element.textContent)) return element;
+    }
+
+    const heading = Array.from(
+      document.querySelectorAll("h1, h2, h3, h4, [role='heading']"),
+    ).find((element) =>
+      /^(?:about the job|about this job|job description|about the role)$/i.test(
+        normalize(element.textContent),
+      ),
+    );
+    if (!heading) return null;
+
+    const candidates: Element[] = [];
+    let current = heading.parentElement;
+    for (let depth = 0; current && depth < 6; depth += 1) {
+      const length = normalize(current.textContent).length;
+      if (length >= 200) candidates.push(current);
+      current = current.parentElement;
+    }
+    return (
+      candidates.sort(
+        (left, right) =>
+          normalize(left.textContent).length -
+          normalize(right.textContent).length,
+      )[0] ?? null
+    );
+  };
+  const initialDescriptionElement = findDescriptionElement();
 
   if (initialDescriptionElement) {
     const descriptionScope =
@@ -148,25 +203,44 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
       ".show-more-less-html__button--more",
       ".jobs-description__footer-button",
       ".jobs-description__show-more-button",
+      "[data-testid='expandable-text-button']",
       "button[aria-label*='description' i][aria-label*='more' i]",
       "button[data-testid*='show-more' i]",
     ];
-    const expandButton = expandSelectors
-      .flatMap((selector) => Array.from(document.querySelectorAll(selector)))
-      .find((element) => {
+    const expandCandidates = [
+      ...expandSelectors.flatMap((selector) =>
+        Array.from(document.querySelectorAll(selector)),
+      ),
+      ...Array.from(
+        descriptionScope?.querySelectorAll("button, [role='button']") ?? [],
+      ),
+    ];
+    const expandButton = Array.from(new Set(expandCandidates)).find(
+      (element) => {
         if (
           !(element instanceof HTMLElement) ||
           element.hasAttribute("disabled")
         )
           return false;
-        if (descriptionScope?.contains(element)) return true;
         const label = normalize(
           `${element.textContent ?? ""} ${element.getAttribute("aria-label") ?? ""}`,
         );
-        return /(?:show|see|read)\s+more.*description|description.*(?:show|see|read)\s+more/i.test(
-          label,
+        const specificallyDescriptionControl = expandSelectors.some(
+          (selector) => element.matches(selector),
         );
-      }) as HTMLElement | undefined;
+        if (
+          specificallyDescriptionControl &&
+          descriptionScope?.contains(element)
+        )
+          return true;
+        return (
+          descriptionScope?.contains(element) === true &&
+          /^(?:(?:show|see|read)\s+more(?:\s+description)?|(?:…|\.\.\.)\s*more)$/i.test(
+            label,
+          )
+        );
+      },
+    ) as HTMLElement | undefined;
 
     if (expandButton) {
       await new Promise<void>((resolve) => {
@@ -194,7 +268,7 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
     }
   }
 
-  const descriptionElement = document.querySelector(descriptionSelector);
+  const descriptionElement = findDescriptionElement();
 
   if (!title || !company || !descriptionElement) {
     return {

@@ -55,6 +55,33 @@ describe("LinkedIn extraction", () => {
     );
   });
 
+  it("extracts the semantic authenticated job layout", async () => {
+    document.documentElement.innerHTML = fixture(
+      "linkedin-job-authenticated.html",
+    );
+    const hiddenContent = document.querySelector<HTMLElement>(
+      "#authenticated-collapsed-content",
+    );
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid='expandable-text-button']",
+      )
+      ?.addEventListener("click", () =>
+        hiddenContent?.removeAttribute("hidden"),
+      );
+
+    const result = await extractLinkedInJob();
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.job.title).toBe(
+      "Executive Design Director, Innovation Experience Design",
+    );
+    expect(result.job.company).toBe("Lenovo");
+    expect(result.job.descriptionHtml).toContain(
+      "This authenticated-layout paragraph was initially collapsed.",
+    );
+  });
+
   it("removes controls, recommendations, scripts, and hidden content", async () => {
     document.documentElement.innerHTML = fixture("linkedin-job.html");
     const result = await extractLinkedInJob();
