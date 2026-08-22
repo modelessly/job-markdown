@@ -95,7 +95,7 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
           element.getAttribute("href") ?? "",
           window.location.href,
         ).pathname;
-        return path.includes(`/jobs/view/${currentJobId}`);
+        return path.match(/\/jobs\/view\/([^/?#]+)/)?.[1] === currentJobId;
       } catch {
         return false;
       }
@@ -112,21 +112,29 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
     .replace(/\s+(?:company\s+)?logo\s*$/i, "")
     .trim();
 
-  const title =
-    stringValue(jsonLd?.title) ||
-    textFrom([
-      "h1.top-card-layout__title",
-      "h1.t-24",
-      ".job-details-jobs-unified-top-card__job-title h1",
-      "h1",
-    ]) ||
+  const titleFromHeading = textFrom([
+    "h1.top-card-layout__title",
+    ".job-details-jobs-unified-top-card__job-title h1",
+    "h1",
+  ]);
+  const title = [
+    titleFromCurrentJobLink,
+    documentTitle,
+    titleFromHeading,
     attributeFrom(["[aria-label^='Job title,']"], "aria-label").replace(
       /^Job title,\s*/i,
       "",
-    ) ||
-    titleFromCurrentJobLink ||
-    publicMetaMatch?.[2] ||
-    (documentTitle && !/^LinkedIn$/i.test(documentTitle) ? documentTitle : "");
+    ),
+    publicMetaMatch?.[2],
+    stringValue(jsonLd?.title),
+  ].find(
+    (candidate) =>
+      candidate &&
+      !/^(?:remote|hybrid|on[ -]?site|full[ -]?time|part[ -]?time)$/i.test(
+        candidate,
+      ) &&
+      !/^LinkedIn$/i.test(candidate),
+  );
   const company =
     stringValue(hiring?.name) ||
     textFrom([
