@@ -118,7 +118,6 @@ export async function extractLinkedInJob(): Promise<ExtractionResult> {
       "h1.top-card-layout__title",
       "h1.t-24",
       ".job-details-jobs-unified-top-card__job-title h1",
-      "[data-testid*='job-title' i]",
       "h1",
     ]) ||
     attributeFrom(["[aria-label^='Job title,']"], "aria-label").replace(

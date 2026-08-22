@@ -26,6 +26,15 @@ describe("sanitizeFilename", () => {
     ).toBe("example-co-senior-product-designer.md");
   });
 
+  it("includes the Lenovo role title after the company name", () => {
+    expect(
+      sanitizeFilename(
+        "Lenovo",
+        "Executive Design Director, Innovation Experience Design",
+      ),
+    ).toBe("lenovo-executive-design-director-innovation-experience-design.md");
+  });
+
   it("falls back when the input has no usable characters", () => {
     expect(sanitizeFilename("公司", "設計師")).toBe("job.md");
   });
