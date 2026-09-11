@@ -1,4 +1,5 @@
 import { extractLinkedInJob } from "./extractors/linkedin";
+import { extractGenericJob } from "./extractors/generic";
 import { generateMarkdown, sanitizeFilename } from "./markdown";
 
 const button = document.querySelector<HTMLButtonElement>("#save-button");
@@ -37,27 +38,36 @@ const isLinkedInJobUrl = (url: string | undefined): boolean => {
   }
 };
 
+const isWebPageUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  try {
+    return /^https?:$/.test(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+};
+
 const initialize = async () => {
   const tab = await getActiveTab();
-  if (!tab?.id || !isLinkedInJobUrl(tab.url)) {
-    setState("unsupported", "Open a LinkedIn job-detail page to save it.");
+  if (!tab?.id || !isWebPageUrl(tab.url)) {
+    setState("unsupported", "Open a public job-detail page to save it.");
     return;
   }
-  setState("ready", "Ready to save this job.");
+  setState("ready", "Ready to inspect this job page.");
 };
 
 button.addEventListener("click", async () => {
   setState("loading", "Reading the job details…");
   try {
     const tab = await getActiveTab();
-    if (!tab?.id || !isLinkedInJobUrl(tab.url)) {
-      setState("unsupported", "This is not a supported LinkedIn job page.");
+    if (!tab?.id || !isWebPageUrl(tab.url)) {
+      setState("unsupported", "This is not a public web page.");
       return;
     }
 
     const [injection] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: extractLinkedInJob,
+      func: isLinkedInJobUrl(tab.url) ? extractLinkedInJob : extractGenericJob,
     });
     const result = injection?.result;
     if (!result?.ok) {
